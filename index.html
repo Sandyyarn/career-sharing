@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>互联网就业经验分享</title>
+<style>
+  :root{
+    --bg:#f3f1e9;
+    --bg2:#efece1;
+    --ink:#1c1b18;
+    --ink-soft:#5a564c;
+    --ink-faint:#9c978a;
+    --line:#dcd8ca;
+    --pink:#f7c8e0;
+    --pink-soft:#fbe4f0;
+    --lime:#dff06a;
+    --lime-soft:#f0f7c4;
+    --card:#fbf9f2;
+    --card-line:#e7e3d5;
+    --serif:'Noto Serif SC','Songti SC','STSong',serif;
+    --sans:'Noto Sans SC','PingFang SC','Hiragino Sans GB',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden;position:relative;
+    /* ① 背景点阵纹理 */
+    background-image:radial-gradient(rgba(120,110,86,.10) 1px, transparent 1.4px);
+    background-size:22px 22px;
+    background-attachment:fixed;
+  }
+  /* ② 角落弥散光晕（固定层，柔和不抢内容） */
+  .glow{position:fixed;border-radius:50%;filter:blur(82px);opacity:.72;z-index:0;pointer-events:none;}
+  .glow.g1{width:560px;height:560px;background:radial-gradient(circle,#f4b3d3,transparent 69%);top:-150px;right:-125px;}
+  .glow.g2{width:520px;height:520px;background:radial-gradient(circle,#d4ee5c,transparent 67%);bottom:-170px;left:-135px;}
+  .glow.g3{width:440px;height:440px;background:radial-gradient(circle,#ffcd9c,transparent 67%);top:41%;left:45%;opacity:.45;}
+  /* 让内容浮在光晕之上 */
+  .topbar,.progress,section,.footer{position:relative;z-index:2;}
+  .topbar{z-index:50;}.progress{z-index:60;}
+
+  /* ---------- 顶部导航 ---------- */
+  .topbar{position:fixed;top:0;left:0;right:0;height:56px;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:0 46px;background:linear-gradient(to bottom,rgba(243,241,233,.95),rgba(243,241,233,0));}
+  .brand{display:flex;align-items:center;gap:12px;font-size:12.5px;letter-spacing:.04em;color:var(--ink-soft);}
+  .brand .dash{width:24px;height:1px;background:var(--ink);}
+  .brand b{font-weight:600;color:var(--ink);}
+  .brand .sep{color:var(--ink-faint);}
+  .pager{display:flex;gap:11px;font-size:11px;letter-spacing:.1em;color:var(--ink-faint);font-family:var(--serif);}
+  .pager a{color:var(--ink-faint);text-decoration:none;transition:.2s;}
+  .pager a:hover,.pager a.active{color:var(--ink);}
+
+  /* ---------- 通用区块 ---------- */
+  section{min-height:100vh;width:100%;padding:78px 56px 54px;display:flex;flex-direction:column;justify-content:center;position:relative;}
+  .eyebrow{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:30px;padding:5px 15px;font-size:11.5px;letter-spacing:.05em;color:var(--ink-soft);width:fit-content;background:var(--card);}
+  .eyebrow .en{font-family:var(--serif);font-style:italic;color:var(--ink-faint);font-size:11px;}
+  .sec-title{font-family:var(--serif);font-weight:700;line-height:1.18;}
+  /* ⑧ 马克笔涂抹质感高亮（不规则边缘 + 倾斜） */
+  .hl-pink,.hl-lime{
+    padding:0 .14em;
+    background-repeat:no-repeat;background-position:center;background-size:100% 86%;
+    border-radius:6px 4px 7px 5px / 5px 7px 4px 6px;
+    box-decoration-break:clone;-webkit-box-decoration-break:clone;
+  }
+  .hl-pink{background-image:linear-gradient(105deg,#f9bcd9,#f7c8e0 60%,#fcd9ec);transform:rotate(-.4deg);display:inline-block;}
+  .hl-lime{background-image:linear-gradient(105deg,#d4ee52,#dff06a 60%,#eaf79a);transform:rotate(.4deg);display:inline-block;}
+  /* ⑧ 渐变文字（用于点睛词） */
+  .grad{background:linear-gradient(100deg,#c64f93,#e8852f 45%,#42a86a 90%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700;}
+
+  /* ⑤ 超大装饰字（每屏背景层的巨大数字/引号） */
+  .ghost{position:absolute;font-family:var(--serif);font-style:italic;font-weight:700;color:rgba(40,36,28,.045);line-height:.8;z-index:0;pointer-events:none;user-select:none;}
+  .ghost.r{right:2%;top:18%;font-size:300px;}
+  .ghost.l{left:1%;bottom:6%;font-size:260px;}
+  section>*:not(.ghost):not(.deco){position:relative;z-index:1;}
+
+  /* ⑥ 手绘感小元素 */
+  .doodle{position:absolute;z-index:1;pointer-events:none;}
+  .doodle svg{display:block;overflow:visible;}
+  .squiggle{stroke:#e667a8;stroke-width:3;fill:none;stroke-linecap:round;}
+  .squiggle.lime{stroke:#7fae26;}
+  .star-doodle{stroke:#e8852f;stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  .circle-doodle{stroke:#3f72d6;stroke-width:2.6;fill:none;stroke-linecap:round;}
+  @keyframes drawIn{from{stroke-dashoffset:var(--len);}to{stroke-dashoffset:0;}}
+  .reveal.in .doodle-draw{stroke-dasharray:var(--len);animation:drawIn 1s ease forwards .2s;}
+
+  /* 区块头：标题左 + 引语右 */
+  .head{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;margin-bottom:26px;padding-bottom:20px;border-bottom:1.5px solid var(--ink);}
+  .head .lhs{flex:1;}
+  .head .kicker{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--ink-faint);letter-spacing:.16em;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+  .head .kicker::before{content:"";width:30px;height:1px;background:var(--ink-faint);}
+  .head h2{font-family:var(--serif);font-weight:700;font-size:50px;line-height:1.12;}
+  .head .intro{max-width:330px;font-size:13px;line-height:1.85;color:var(--ink-soft);text-align:right;padding-bottom:4px;}
+  .head .intro b{color:var(--ink);}
+
+  /* ---------- 封面 ---------- */
+  .cover{align-items:center;text-align:center;padding-top:70px;}
+  .cover .eyebrow{margin-bottom:26px;}
+  h1.cover-title{font-family:var(--serif);font-weight:700;line-height:1.16;font-size:80px;letter-spacing:.01em;}
+  .cover .divider{display:flex;align-items:center;gap:14px;margin:24px 0 22px;color:var(--ink-faint);font-family:var(--serif);font-style:italic;font-size:13px;letter-spacing:.05em;}
+  .cover .divider .ln{width:46px;height:1px;background:var(--line);}
+  .preface{max-width:660px;font-size:14px;line-height:1.9;color:var(--ink-soft);background:var(--card);border:1px dashed var(--card-line);border-left:3px solid var(--lime);padding:15px 24px;border-radius:3px;text-align:left;}
+  .preface b{color:var(--ink);}
+  .cards3{display:grid;grid-template-columns:repeat(3,minmax(0,270px));gap:22px;justify-content:center;margin-top:34px;}
+  .ncard{background:var(--card);border:1px solid var(--card-line);border-radius:5px;border-top:3px solid var(--ink);padding:22px 22px 24px;text-align:left;}
+  .ncard .no{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--ink);margin-bottom:12px;}
+  .ncard h3{font-family:var(--serif);font-size:21px;font-weight:700;margin-bottom:3px;}
+  .ncard .en{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--ink-faint);margin-bottom:12px;}
+  .ncard p{font-size:12.5px;line-height:1.8;color:var(--ink-soft);}
+  .ncard p b{color:var(--ink);}
+  .meta-row{display:flex;gap:64px;justify-content:center;margin-top:38px;padding-top:22px;border-top:1px solid var(--line);width:fit-content;align-self:center;}
+  .meta-row .it{text-align:center;}
+  .meta-row .k{font-size:10px;letter-spacing:.2em;color:var(--ink-faint);margin-bottom:7px;}
+  .meta-row .v{font-family:var(--serif);font-size:16px;}
+  .meta-row .v.em{font-style:italic;}
+
+  /* ---------- 综合页通用栅格 ---------- */
+  .grid{display:grid;gap:30px;align-items:stretch;}
+  .blk-label{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:14px;}
+  .blk-label .no{font-family:var(--serif);font-style:italic;width:22px;height:22px;flex:none;display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--bg);border-radius:50%;font-size:12px;}
+  .blk-label .en{font-family:var(--serif);font-style:italic;color:var(--ink-faint);font-weight:400;font-size:12px;margin-left:auto;}
+
+  /* 能力维度 2x3 */
+  .cap-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+  .cap{background:var(--card);border:1px solid var(--card-line);border-radius:5px;padding:13px 15px;border-left:3px solid var(--lime);}
+  .cap .i{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink-faint);margin-bottom:4px;}
+  .cap h4{font-size:14px;font-weight:600;margin-bottom:4px;}
+  .cap p{font-size:11.5px;line-height:1.65;color:var(--ink-soft);}
+  .cap p b{color:var(--ink);}
+
+  /* 时间线 */
+  .timeline{display:flex;align-items:flex-end;margin-bottom:14px;}
+  .tl-node{flex:1;text-align:center;padding:0 4px;}
+  .tl-node .num{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--ink-faint);margin-bottom:8px;}
+  .tl-node .pill{background:var(--card);border:1px solid var(--card-line);border-radius:5px;padding:11px 6px;font-size:13.5px;font-weight:600;}
+  .tl-node:first-child .pill{border-top:3px solid var(--ink);}
+  .tl-arrow{color:var(--ink-faint);font-size:18px;padding:0 3px 11px;font-family:var(--serif);}
+  .tip{background:var(--card);border:1px dashed var(--card-line);border-left:3px solid var(--pink);border-radius:3px;padding:11px 16px;font-size:12.5px;line-height:1.75;color:var(--ink-soft);}
+  .tip b{color:var(--ink);}
+
+  /* 岗位三栏 */
+  .role-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .jcard{background:var(--card);border:1px solid var(--card-line);border-radius:5px;padding:15px 14px 16px;border-top:3px solid var(--ink);}
+  .jcard .tag{display:inline-block;font-size:9px;letter-spacing:.12em;background:var(--ink);color:var(--bg);padding:2px 8px;border-radius:3px;margin-bottom:9px;}
+  .jcard h3{font-family:var(--serif);font-size:16px;font-weight:700;margin-bottom:7px;}
+  .jcard .core{font-size:12px;line-height:1.7;color:var(--ink-soft);}
+  .jcard .core b{color:var(--ink);}
+  .jcard .note{margin-top:9px;padding-top:8px;border-top:1px dashed var(--card-line);font-size:11px;color:var(--ink-faint);line-height:1.6;}
+
+  /* 简历三原则 */
+  .resume-list{display:flex;flex-direction:column;gap:12px;}
+  .ritem{display:grid;grid-template-columns:46px 1fr;gap:14px;background:var(--card);border:1px solid var(--card-line);border-radius:5px;padding:15px 18px;border-left:3px solid var(--pink);align-items:center;}
+  .ritem .rno{font-family:var(--serif);font-style:italic;font-size:30px;color:var(--pink);-webkit-text-stroke:1px var(--ink-faint);line-height:1;}
+  .ritem h4{font-size:15px;font-weight:600;margin-bottom:5px;}
+  .ritem p{font-size:12.5px;line-height:1.75;color:var(--ink-soft);}
+  .ritem p b{color:var(--ink);}
+
+  /* STAR-R */
+  .star-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;}
+  .star{background:var(--card);border:1px solid var(--card-line);border-radius:5px;padding:14px 6px;text-align:center;}
+  .star .l{font-family:var(--serif);font-style:italic;font-size:24px;color:var(--ink);margin-bottom:5px;}
+  .star .zh{font-size:12px;color:var(--ink-soft);}
+  .star.extra{border-color:var(--ink);background:#fbfada;}
+  .example{background:var(--card);border:1px solid var(--card-line);border-left:3px solid var(--pink);border-radius:3px;padding:14px 18px;font-size:12.5px;line-height:1.9;color:var(--ink-soft);}
+  .example b{color:var(--ink);}
+  .example .ar{color:var(--ink-faint);margin:0 5px;font-family:var(--serif);}
+
+  /* AI 专项 */
+  .ai-lead{font-size:14px;line-height:1.9;color:var(--ink-soft);margin-bottom:24px;}
+  .ai-lead b{color:var(--ink);}
+  .ai3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:22px;}
+  .aic{background:var(--card);border:1px solid var(--card-line);border-radius:5px;padding:22px 22px 24px;border-top:3px solid var(--ink);position:relative;}
+  .aic .big{position:absolute;top:14px;right:18px;font-family:var(--serif);font-style:italic;font-size:34px;color:var(--lime);-webkit-text-stroke:1px var(--ink-faint);line-height:1;}
+  .aic h4{font-family:var(--serif);font-size:19px;font-weight:700;margin-bottom:3px;}
+  .aic .en{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--ink-faint);margin-bottom:13px;}
+  .aic p{font-size:13px;line-height:1.85;color:var(--ink-soft);}
+  .land{background:var(--card);border:1px dashed var(--card-line);border-left:3px solid var(--lime);border-radius:3px;padding:15px 22px;font-size:13.5px;line-height:1.85;color:var(--ink-soft);}
+  .land b{color:var(--ink);}
+
+  /* 真人经验分享 D —— 四张彩色卡片 */
+  .people-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .pcard{border:1px solid var(--card-line);border-radius:8px;padding:18px 18px 20px;border-top:4px solid var(--ink);display:flex;flex-direction:column;
+    transition:transform .28s cubic-bezier(.22,.61,.36,1),box-shadow .28s ease;}
+  .pcard:hover{transform:translateY(-6px);box-shadow:0 16px 32px -16px rgba(40,36,28,.32);}
+  .phead{padding-bottom:12px;margin-bottom:13px;border-bottom:1px dashed rgba(40,36,28,.18);}
+  .pname{font-family:var(--serif);font-size:23px;font-weight:700;margin-bottom:8px;}
+  .pmeta{display:flex;flex-wrap:wrap;gap:6px;}
+  .pco{font-size:11px;color:var(--ink-soft);background:rgba(255,255,255,.6);border:1px solid rgba(40,36,28,.12);border-radius:20px;padding:2px 10px;}
+  .prole{font-size:11px;letter-spacing:.06em;color:#fff;border-radius:20px;padding:2px 10px;}
+  .plist{list-style:none;counter-reset:p;display:flex;flex-direction:column;gap:10px;margin-top:2px;}
+  .plist li{counter-increment:p;position:relative;padding-left:30px;font-size:13px;line-height:1.55;color:var(--ink-soft);}
+  .plist li::before{content:counter(p);position:absolute;left:0;top:0;width:21px;height:21px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-size:12px;color:#fff;border-radius:50%;}
+  /* ① 点点 · 蓝 */
+  .pc-1{background:linear-gradient(180deg,#dcebff,#f3f7ff 46%);border-top-color:#5b8def;}
+  .pc-1{background:linear-gradient(180deg,#dceaff,#f4f8ff 46%);}
+  .pc-1 .prole{background:#3f72d6;}
+  .pc-1 .plist li::before{background:#5b8def;}
+  /* ② 璇子 · 绿 */
+  .pc-2{background:linear-gradient(180deg,#d8f0dd,#f3fbf4 46%);border-top-color:#42a86a;}
+  .pc-2 .prole{background:#2f9357;}
+  .pc-2 .plist li::before{background:#42a86a;}
+  /* ③ 醒醒 · 橙 */
+  .pc-3{background:linear-gradient(180deg,#ffe6cf,#fff6ec 46%);border-top-color:#e8852f;}
+  .pc-3 .prole{background:#d4711b;}
+  .pc-3 .plist li::before{background:#e8852f;}
+  /* ④ 依依 · 粉（本人） */
+  .pc-4{background:linear-gradient(180deg,#fbd5ea,#fff0f8 46%);border-top-color:#e667a8;}
+  .pc-4 .prole{background:#c64f93;}
+  .pc-4 .plist li::before{background:#e667a8;}
+
+  /* 收尾 */
+  .end-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .eitem{display:grid;grid-template-columns:42px 1fr;gap:16px;align-items:center;background:var(--card);border:1px solid var(--card-line);border-radius:5px;padding:20px 22px;border-left:3px solid var(--ink);}
+  .eitem .ico{font-family:var(--serif);font-style:italic;font-size:26px;color:var(--ink-faint);}
+  .eitem h4{font-size:16px;font-weight:600;margin-bottom:5px;}
+  .eitem p{font-size:13px;line-height:1.75;color:var(--ink-soft);}
+  .closing{margin-top:26px;text-align:center;font-family:var(--serif);font-size:23px;line-height:1.7;padding:22px;background:var(--bg2);border-radius:6px;border:1px solid var(--line);}
+  .closing .hl-lime{font-weight:700;}
+
+  /* 联系方式 + 内推码 */
+  .contact{margin-top:22px;display:flex;align-items:stretch;justify-content:center;gap:24px;flex-wrap:wrap;}
+  .qr-box{background:var(--card);border:1px solid var(--card-line);border-radius:10px;padding:16px 18px 13px;text-align:center;border-top:3px solid var(--ink);}
+  .qr-img{width:148px;height:148px;display:block;border-radius:6px;object-fit:contain;background:#fff;}
+  .qr-cap{margin-top:10px;font-size:12.5px;color:var(--ink-soft);letter-spacing:.02em;}
+  .referral{display:flex;flex-direction:column;justify-content:center;background:linear-gradient(135deg,var(--lime-soft),var(--card) 70%);border:1px solid var(--card-line);border-left:3px solid var(--lime);border-radius:10px;padding:20px 30px;min-width:220px;}
+  .ref-label{font-size:12px;letter-spacing:.18em;color:var(--ink-soft);margin-bottom:10px;}
+  .ref-code{font-family:var(--serif);font-weight:700;font-size:38px;letter-spacing:.14em;color:var(--ink);background:var(--lime);display:inline-block;padding:4px 16px;border-radius:6px;margin-bottom:12px;align-self:flex-start;}
+  .ref-hint{font-size:12.5px;color:var(--ink-soft);line-height:1.6;}
+
+  /* 底部 */
+  .footer{display:flex;justify-content:space-between;align-items:center;padding:14px 56px 22px;font-size:11px;color:var(--ink-faint);letter-spacing:.04em;}
+  .footer .en{font-family:var(--serif);font-style:italic;}
+
+  /* 装饰 + 漂浮呼吸 ⑪ */
+  .deco{position:absolute;border-radius:50%;pointer-events:none;animation:floaty 7s ease-in-out infinite;}
+  .d-lime{width:9px;height:9px;background:var(--lime);}
+  .d-pink{width:11px;height:11px;background:var(--pink);animation-duration:9s;animation-delay:-2s;}
+  .d-ink{width:7px;height:7px;background:#b9a06a;animation-duration:8s;animation-delay:-4s;}
+  @keyframes floaty{
+    0%,100%{transform:translateY(0) scale(1);opacity:.9;}
+    50%{transform:translateY(-14px) scale(1.15);opacity:.55;}
+  }
+
+  /* ====== 顶部阅读进度条 ⑤ ====== */
+  .progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:60;
+    background:linear-gradient(90deg,var(--pink),var(--lime));transition:width .12s linear;}
+
+  /* ====== 滚动渐入上浮 ① + 卡片错峰 ② ====== */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.22,.61,.36,1),transform .7s cubic-bezier(.22,.61,.36,1);will-change:opacity,transform;}
+  .reveal.in{opacity:1;transform:translateY(0);}
+  /* 错峰延迟（同组卡片依次出现） */
+  .stagger>*{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease;}
+  .stagger.in>*{opacity:1;transform:translateY(0);}
+  .stagger.in>*:nth-child(1){transition-delay:.05s;}
+  .stagger.in>*:nth-child(2){transition-delay:.13s;}
+  .stagger.in>*:nth-child(3){transition-delay:.21s;}
+  .stagger.in>*:nth-child(4){transition-delay:.29s;}
+  .stagger.in>*:nth-child(5){transition-delay:.37s;}
+  .stagger.in>*:nth-child(6){transition-delay:.45s;}
+
+  /* ====== 卡片悬停抬起 ⑧ ====== */
+  .ncard,.cap,.jcard,.aic,.ritem,.eitem,.star,.tl-node .pill{
+    transition:transform .28s cubic-bezier(.22,.61,.36,1),box-shadow .28s ease,border-color .28s ease;}
+  .ncard:hover,.aic:hover,.jcard:hover{transform:translateY(-6px);box-shadow:0 14px 30px -14px rgba(40,36,28,.28);border-top-color:var(--ink);}
+  .cap:hover,.ritem:hover,.eitem:hover{transform:translateY(-4px);box-shadow:0 12px 24px -14px rgba(40,36,28,.25);}
+  .star:hover{transform:translateY(-4px) scale(1.04);box-shadow:0 10px 22px -12px rgba(40,36,28,.28);}
+  .star.extra{animation:pulseExtra 2.6s ease-in-out infinite;}
+  @keyframes pulseExtra{0%,100%{box-shadow:0 0 0 0 rgba(28,27,24,.18);}50%{box-shadow:0 0 0 6px rgba(28,27,24,0);}}
+
+  /* ====== 封面开场动画 ⑫ ====== */
+  @keyframes coverUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes hlSweep{from{background-size:0% 100%;}to{background-size:100% 100%;}}
+  .cover .eyebrow,.cover h1,.cover .divider,.cover .preface,.cover .cards3>*,.cover .meta-row{
+    opacity:0;animation:coverUp .8s cubic-bezier(.22,.61,.36,1) forwards;}
+  .cover .eyebrow{animation-delay:.1s;}
+  .cover h1{animation-delay:.28s;}
+  .cover .divider{animation-delay:.5s;}
+  .cover .preface{animation-delay:.62s;}
+  .cover .cards3>*:nth-child(1){animation-delay:.74s;}
+  .cover .cards3>*:nth-child(2){animation-delay:.86s;}
+  .cover .cards3>*:nth-child(3){animation-delay:.98s;}
+  .cover .meta-row{animation-delay:1.12s;}
+  /* 封面高亮块刷过 ③（仅封面标题） */
+  .cover h1 .hl-pink,.cover h1 .hl-lime{
+    background-repeat:no-repeat;background-position:left center;background-size:0% 100%;
+    animation:hlSweep .6s ease forwards;}
+  .cover h1 .hl-pink{animation-delay:.7s;}
+  .cover h1 .hl-lime{animation-delay:.9s;}
+
+  /* ====== 鼠标气泡拖尾 ====== */
+  .bubble{
+    position:fixed;top:0;left:0;z-index:70;pointer-events:none;border-radius:50%;
+    mix-blend-mode:multiply;
+    animation:bubblePop 1s ease-out forwards;
+    will-change:transform,opacity;
+  }
+  @keyframes bubblePop{
+    0%{transform:translate(-50%,-50%) scale(.3);opacity:.9;}
+    40%{transform:translate(-50%,-50%) scale(1.25);opacity:.55;}
+    100%{transform:translate(-50%,-50%) scale(.6) translateY(-22px);opacity:0;}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none !important;transition:none !important;}
+    .reveal,.stagger>*{opacity:1 !important;transform:none !important;}
+    .cover .eyebrow,.cover h1,.cover .divider,.cover .preface,.cover .cards3>*,.cover .meta-row{opacity:1 !important;}
+    .cover h1 .hl-pink,.cover h1 .hl-lime{background-size:100% 100% !important;}
+    .bubble{display:none !important;}
+  }
+
+  @media(max-width:1100px){
+    .grid{grid-template-columns:1fr !important;}
+    .head{flex-direction:column;align-items:flex-start;gap:14px;}
+    .head .intro{text-align:left;max-width:none;}
+  }
+  @media(max-width:900px){
+    .topbar{padding:0 22px;}.pager{display:none;}
+    section{padding:74px 22px 50px;}
+    h1.cover-title{font-size:44px;}.head h2{font-size:32px;}
+    .cards3,.cap-grid,.role-grid,.ai3,.end-grid,.people-grid{grid-template-columns:1fr;}
+    .star-row{grid-template-columns:1fr 1fr;}
+    .timeline{flex-wrap:wrap;gap:8px;}.tl-node{flex:1 1 40%;}.tl-arrow{display:none;}
+    .footer{padding:14px 22px;flex-direction:column;gap:8px;}
+    .contact{flex-direction:column;align-items:center;}
+    .ref-code{align-self:center;}
+    .referral{text-align:center;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ② 弥散光晕层 -->
+<div class="glow g1"></div>
+<div class="glow g2"></div>
+<div class="glow g3"></div>
+
+<div class="progress" id="progress"></div>
+
+<div class="topbar">
+  <div class="brand"><span class="dash"></span><b>Sandy</b><span class="sep">·</span><span>互联网就业经验分享</span></div>
+  <div class="pager">
+    <a href="#s0" class="active">01</a><span>·</span>
+    <a href="#s1">02</a><span>·</span>
+    <a href="#s2">03</a><span>·</span>
+    <a href="#s3">04</a>
+  </div>
+</div>
+
+<!-- 00 封面 -->
+<section id="s0" class="cover">
+  <div class="deco d-lime" style="top:16%;right:26%;"></div>
+  <div class="deco d-pink" style="bottom:24%;right:22%;"></div>
+  <div class="deco d-ink" style="top:40%;left:20%;"></div>
+  <div class="eyebrow">Career Sharing <span class="en">June 2026</span></div>
+  <h1 class="cover-title">互联网<span class="hl-pink">就业</span><br><span class="hl-lime">经验</span>分享</h1>
+  <!-- ⑥ 手绘波浪下划线 -->
+  <div class="doodle" style="position:static;margin:6px auto 0;width:230px;">
+    <svg width="230" height="16" viewBox="0 0 230 16"><path class="squiggle" d="M3 9 C 30 2, 50 14, 78 8 S 130 2, 158 9 S 205 14, 227 6"/></svg>
+  </div>
+  <div class="divider" style="margin:14px 0 6px;"><span class="ln" style="width:80px;"></span></div>
+  <div class="preface"><b>说在最前面：</b>求职过程中也许有很多焦虑，但<b>大家最终都会去到想去的地方</b>，静待自己的机会到来～</div>
+  <div class="cards3">
+    <div class="ncard"><div class="no">01</div><h3>看清维度</h3><div class="en">Capabilities</div><p>大厂筛人先看<b>学历、垂直实习、四项通用能力</b>，搞清规则才能对症发力。</p></div>
+    <div class="ncard"><div class="no">02</div><h3>做对动作</h3><div class="en">Resume & Interview</div><p>用数据写简历，用 <b>STAR-R</b> 讲项目，把每段经历讲到经得起深挖。</p></div>
+    <div class="ncard"><div class="no">03</div><h3>差异破局</h3><div class="en">AI Empowerment</div><p>会用 <b>AI</b> 正从加分项变成基本项，是和别人拉开差距的关键。</p></div>
+  </div>
+  <div class="meta-row">
+    <div class="it"><div class="k">SPEAKER</div><div class="v">单子依</div></div>
+    <div class="it"><div class="k">TOPIC</div><div class="v">产品 / 运营 / 销售</div></div>
+    <div class="it"><div class="k">DATE</div><div class="v em">June · 2026</div></div>
+  </div>
+</section>
+
+<!-- 01 能力·时间线·岗位 -->
+<section id="s1">
+  <div class="ghost r">01</div>
+  <div class="deco d-lime" style="top:12%;right:8%;"></div>
+  <div class="deco d-pink" style="bottom:12%;left:6%;"></div>
+  <div class="doodle" style="top:90px;right:9%;">
+    <svg width="60" height="60" viewBox="0 0 60 60"><path class="star-doodle" d="M30 6 L35 24 L54 24 L38 35 L44 53 L30 42 L16 53 L22 35 L6 24 L25 24 Z"/></svg>
+  </div>
+  <div class="head reveal">
+    <div class="lhs">
+      <div class="kicker">01 — 宏观板块</div>
+      <h2>能力维度 · 时间线 · <span class="hl-lime">岗位画像</span></h2>
+    </div>
+    <p class="intro">大厂筛人先看三件事：你具备哪些<b>能力</b>、是否在<b>对的时间</b>出手、和<b>目标岗位</b>有多匹配。</p>
+  </div>
+  <div class="grid" style="grid-template-columns:1fr 1.08fr;">
+    <div>
+      <div class="blk-label reveal"><span class="no">A</span> 大厂看重的能力维度 <span class="en">Capabilities</span></div>
+      <div class="cap-grid stagger">
+        <div class="cap"><div class="i">01</div><h4>基础门槛 · 学历</h4><p>入场券，大家基本已满足，不是重点。</p></div>
+        <div class="cap"><div class="i">02</div><h4>垂直实习经历</h4><p>1-2 段对口实习很重要，满足"快速到岗、快速上手"。</p></div>
+        <div class="cap"><div class="i">03</div><h4>沟通能力</h4><p>面试与日常协作的基础，决定第一印象。</p></div>
+        <div class="cap"><div class="i">04</div><h4>逻辑思维</h4><p>处理工作、汇报、写文档，把复杂的事讲清楚。</p></div>
+        <div class="cap"><div class="i">05</div><h4>数据敏感度</h4><p>不强求做专业分析（可借助 AI），但要能从数据看出问题。</p></div>
+        <div class="cap"><div class="i">06</div><h4>抗压与学习</h4><p>拥抱变化、持续学习，是长期走下去的底层素质。</p></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;">
+      <div class="blk-label reveal"><span class="no">B</span> 求职时间线 <span class="en">Timeline</span></div>
+      <div class="timeline reveal">
+        <div class="tl-node"><div class="num">i</div><div class="pill">实习转正</div></div>
+        <div class="tl-arrow">›</div>
+        <div class="tl-node"><div class="num">ii</div><div class="pill">提前批</div></div>
+        <div class="tl-arrow">›</div>
+        <div class="tl-node"><div class="num">iii</div><div class="pill">秋招</div></div>
+        <div class="tl-arrow">›</div>
+        <div class="tl-node"><div class="num">iv</div><div class="pill">春招补录</div></div>
+      </div>
+      <div class="tip reveal" style="margin-bottom:22px;"><b>功夫在平时，越早开始优势越大。</b>等到投简历那一刻，胜负其实很大程度上已经定了。</div>
+      <div class="blk-label reveal"><span class="no">C</span> 细分岗位画像 <span class="en">Roles</span></div>
+      <div class="role-grid stagger" style="flex:1;">
+        <div class="jcard"><span class="tag">PRODUCT</span><h3>产品经理岗</h3><div class="core">核心：<b>产品思维 + 推进力 + 沟通力</b>。</div><div class="note">B/C 端边界模糊，两端都要懂；数据分析越来越被看重。</div></div>
+        <div class="jcard"><span class="tag">OPERATION</span><h3>运营岗</h3><div class="core">职责：<b>内容分发、增长留存、数据优化、活动策划</b>。</div><div class="note">把用户拉进来、留下来、活跃起来。</div></div>
+        <div class="jcard"><span class="tag">SALES</span><h3>销售 / 商务岗</h3><div class="core">看重：<b>结果导向、抗压、客户沟通、商业敏感度</b>。</div><div class="note">用结果说话，搞定客户、拿下目标。</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 简历·面试·AI·真人经验 -->
+<section id="s2" style="justify-content:flex-start;padding-top:70px;">
+  <div class="ghost l">02</div>
+  <div class="deco d-pink" style="top:14%;left:7%;"></div>
+  <div class="deco d-lime" style="bottom:14%;right:10%;"></div>
+  <div class="doodle" style="top:84px;right:8%;">
+    <svg width="72" height="42" viewBox="0 0 72 42"><path class="circle-doodle doodle-draw" style="--len:210" d="M36 5 C 12 5, 5 35, 36 37 C 67 35, 60 5, 34 6"/></svg>
+  </div>
+  <div class="head reveal">
+    <div class="lhs">
+      <div class="kicker">02 — 实战板块</div>
+      <h2>简历 · 面试 · <span class="hl-lime">AI</span> 加持</h2>
+    </div>
+    <p class="intro">简历决定能否<b>进面</b>，面试决定能否<b>拿 offer</b>，而<b>会用 AI</b> 正在成为拉开差距的关键。</p>
+  </div>
+  <div class="grid" style="grid-template-columns:1fr 1.05fr;margin-bottom:24px;">
+    <div>
+      <div class="blk-label reveal"><span class="no">A</span> 简历撰写 · 三条原则 <span class="en">Resume</span></div>
+      <div class="resume-list stagger">
+        <div class="ritem"><div class="rno">01</div><div><h4>围绕岗位需求写成果</h4><p>对照岗位能力要求，把每段实习经历的<b>成果</b>提炼出来，让简历与岗位精准对应。</p></div></div>
+        <div class="ritem"><div class="rno">02</div><div><h4>结果用数据表达</h4><p>不只说"做了什么"，要说"做出什么效果"，尽量用数字，如"次日留存 30% → 45%"。</p></div></div>
+        <div class="ritem"><div class="rno">03</div><div><h4>尽量有相关经历</h4><p>要么<b>岗位相关</b>，要么<b>行业相关</b>。哪怕不完全对口，也要找到连接点。</p></div></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;">
+      <div class="blk-label reveal"><span class="no">B</span> 面试通关 · STAR-R <span class="en">Interview</span></div>
+      <p class="ai-lead reveal" style="font-size:13px;margin-bottom:14px;">项目深挖用 <b>STAR-R</b>：比经典 STAR 多一个 Reflection（反思）。讲完结果再补一句"后续怎么优化"，让回答更有深度。</p>
+      <div class="star-row stagger" style="margin-bottom:14px;">
+        <div class="star"><div class="l">S</div><div class="zh">情境</div></div>
+        <div class="star"><div class="l">T</div><div class="zh">任务</div></div>
+        <div class="star"><div class="l">A</div><div class="zh">行动</div></div>
+        <div class="star"><div class="l">R</div><div class="zh">结果</div></div>
+        <div class="star extra"><div class="l">R</div><div class="zh">反思</div></div>
+      </div>
+      <div class="example reveal" style="flex:1;display:flex;align-items:center;">
+        <div><b>示例：</b>发现复购率低（<b>问题</b>）<span class="ar">→</span> 用户分层运营（<b>行动</b>）<span class="ar">→</span> 3 个月复购 +15%（<b>结果</b>）<span class="ar">→</span> 后续优化会员体系（<b>反思</b>）。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="blk-label reveal"><span class="no">C</span> AI 能力专项 · 用 AI 拉开差距 <span class="en">AI Empowerment</span></div>
+  <div class="ai3 stagger" style="margin-bottom:14px;">
+    <div class="aic"><div class="big">01</div><h4>AI Prompting</h4><div class="en">提示工程</div><p>会用大模型加速写 PRD、做竞品分析、生成测试用例和用户画像，大幅提升效率。</p></div>
+    <div class="aic"><div class="big">02</div><h4>数据叙事</h4><div class="en">Data Storytelling</div><p>把数据变成能打动决策层的故事，而不只是冷冰冰地报数字。</p></div>
+    <div class="aic"><div class="big">03</div><h4>AI 素养</h4><div class="en">AI Literacy</div><p>知道什么是 embedding、幻觉、微调，能和工程师顺畅对话、提前识别风险。</p></div>
+  </div>
+  <div class="land reveal" style="margin-bottom:24px;"><b>核心心法：</b>不是要你写代码，而是要有<b>"技术直觉"</b>——理解 AI 的能力边界与适用场景；哪怕只是学生项目，也尽量体现"<b>我用 AI 做了什么、带来了什么可量化成果</b>"。</div>
+
+  <div class="blk-label reveal"><span class="no">D</span> 不同岗位经验分享 · 最重要的能力 <span class="en">Real Voices</span></div>
+  <div class="people-grid stagger">
+    <div class="pcard pc-1">
+      <div class="phead"><div class="pname">点点</div><div class="pmeta"><span class="pco">滴滴 · 出海增长</span><span class="prole">产品</span></div></div>
+      <ol class="plist">
+        <li>用户洞察和同理心</li>
+        <li>数据和实验能力</li>
+        <li>语言和本地化</li>
+      </ol>
+    </div>
+    <div class="pcard pc-2">
+      <div class="phead"><div class="pname">璇子</div><div class="pmeta"><span class="pco">微信</span><span class="prole">产品</span></div></div>
+      <ol class="plist">
+        <li>用户洞察 + 老板洞察</li>
+        <li>踏实，对细节负责</li>
+        <li>多问自己为什么</li>
+      </ol>
+    </div>
+    <div class="pcard pc-3">
+      <div class="phead"><div class="pname">醒醒</div><div class="pmeta"><span class="pco">TikTok</span><span class="prole">User Growth</span></div></div>
+      <ol class="plist">
+        <li>增长思维 & 数据分析能力</li>
+        <li>用户 & 海外市场洞察</li>
+        <li>敢想敢试敢创新</li>
+      </ol>
+    </div>
+    <div class="pcard pc-4">
+      <div class="phead"><div class="pname">依依</div><div class="pmeta"><span class="pco">腾讯广告</span><span class="prole">销售 / 运营</span></div></div>
+      <ol class="plist">
+        <li>市场分析 + 生意挖掘</li>
+        <li>数据洞察 + 业绩达成</li>
+        <li>人际交往 + 多形式输出表达</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- 03 收尾 -->
+<section id="s3" style="justify-content:flex-start;padding-top:70px;">
+  <div class="ghost r">03</div>
+  <div class="deco d-ink" style="top:16%;left:10%;"></div>
+  <div class="deco d-pink" style="bottom:18%;right:12%;"></div>
+  <div class="doodle" style="top:88px;right:9%;">
+    <svg width="56" height="56" viewBox="0 0 56 56"><path class="star-doodle" style="stroke:#42a86a" d="M28 6 L33 22 L50 22 L36 33 L41 50 L28 39 L15 50 L20 33 L6 22 L23 22 Z"/></svg>
+  </div>
+  <div class="head reveal">
+    <div class="lhs">
+      <div class="kicker">03 — 收尾</div>
+      <h2>最后几条<span class="hl-pink">实在建议</span></h2>
+    </div>
+    <p class="intro">方法和信息差，能帮你打开更多选择。</p>
+  </div>
+  <div class="end-grid stagger" style="grid-template-columns:1fr 1fr;">
+    <div class="eitem"><div class="ico">i</div><div><h4>抓住暑期实习机会</h4><p>这是最稳的上岸通道，很多人就是靠实习直接转正的。</p></div></div>
+    <div class="eitem"><div class="ico">ii</div><div><h4>善用内推</h4><p>主动找学长学姐内推，跳过简历海筛、直接进入面试，事半功倍。</p></div></div>
+    <div class="eitem"><div class="ico">iii</div><div><h4>建立自己的作品集</h4><p>把过去项目（脱敏后）、AI vibe coding 的成果整理出来，让能力"看得见"。</p></div></div>
+    <div class="eitem"><div class="ico">iv</div><div><h4>每次面试后做复盘</h4><p>把被问到的问题、答得不好的地方记录下来，输出成自己的经验。</p></div></div>
+    <div class="eitem" style="grid-column:1 / -1;border-left-color:var(--lime);"><div class="ico">v</div><div><h4>用 AI 拉开差距</h4><p>这是这两年<b>最大的趋势</b>。大厂已明确要求"会用 AI"，它正从加分项变成基本项——尽早把 AI 用进你的学习、项目和求职里，就是你和别人最大的不同。</p></div></div>
+  </div>
+  <div class="closing reveal">方法和信息差能帮你打开更多选择，但选哪条路，<span class="grad" style="font-size:1.1em;">永远是你自己说了算</span>。
+    <div class="doodle" style="position:static;margin:10px auto 0;width:260px;">
+      <svg width="260" height="14" viewBox="0 0 260 14"><path class="squiggle lime" d="M3 8 C 35 2, 60 12, 92 7 S 150 2, 182 8 S 235 12, 257 5"/></svg>
+    </div>
+  </div>
+
+  <div class="contact reveal">
+    <div class="qr-box">
+      <img src="wechat-qr.jpg" alt="依依的微信二维码" class="qr-img">
+    </div>
+    <div class="referral">
+      <div class="ref-label">我的腾讯内推码</div>
+      <div class="ref-code">E5LAH16C</div>
+    </div>
+  </div>
+</section>
+
+<div class="footer">
+  <span>A career sharing · 产品 · 运营 · 销售</span>
+  <span class="en">June · 2026</span>
+</div>
+
+<script>
+  // 顶部页码高亮
+  const sections=[...document.querySelectorAll('section')];
+  const pagerLinks=[...document.querySelectorAll('.pager a')];
+  const navIO=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{if(e.isIntersecting){const id=e.target.id;pagerLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+id));}});
+  },{threshold:.5});
+  sections.forEach(s=>navIO.observe(s));
+
+  // ① 滚动渐入 + ② 错峰：进入视口时加 .in
+  const revealEls=[...document.querySelectorAll('.reveal, .stagger')];
+  const revIO=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); revIO.unobserve(e.target); } });
+  },{threshold:.18, rootMargin:'0px 0px -8% 0px'});
+  revealEls.forEach(el=>revIO.observe(el));
+
+  // ⑤ 顶部阅读进度条
+  const bar=document.getElementById('progress');
+  const onScroll=()=>{
+    const h=document.documentElement;
+    const max=h.scrollHeight-h.clientHeight;
+    const p=max>0 ? (h.scrollTop/max)*100 : 0;
+    bar.style.width=p+'%';
+  };
+  window.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+
+  // 鼠标气泡呼吸拖尾
+  (function(){
+    if(window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+    if(window.matchMedia('(hover:none)').matches) return; // 触屏设备不启用
+    const colors=['#f7c8e0','#dff06a','#fbe4f0','#f0f7c4','#e8dcc0'];
+    let lastX=0,lastY=0,moved=0,throttle=0;
+    document.addEventListener('mousemove',(e)=>{
+      const now=performance.now();
+      if(now-throttle<28) return;          // 控制密度
+      throttle=now;
+      const dx=e.clientX-lastX, dy=e.clientY-lastY;
+      const dist=Math.hypot(dx,dy);
+      lastX=e.clientX; lastY=e.clientY;
+      if(dist<3) return;                    // 静止不产生
+      const b=document.createElement('span');
+      b.className='bubble';
+      const size=6+Math.random()*12;
+      b.style.width=size+'px';
+      b.style.height=size+'px';
+      b.style.background=colors[(Math.random()*colors.length)|0];
+      b.style.left=(e.clientX+(Math.random()*14-7))+'px';
+      b.style.top=(e.clientY+(Math.random()*14-7))+'px';
+      b.style.opacity=String(0.4+Math.random()*0.4);
+      document.body.appendChild(b);
+      b.addEventListener('animationend',()=>b.remove());
+    },{passive:true});
+  })();
+</script>
+</body>
+</html>
